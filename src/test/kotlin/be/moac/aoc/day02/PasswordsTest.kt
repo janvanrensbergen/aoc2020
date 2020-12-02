@@ -19,4 +19,18 @@ internal class PasswordsTest {
         Assertions.assertThat(result).isEqualTo(2)
 
     }
+    
+    @Test
+    internal fun `that part two will count how many passwords are valid following the new rules`() {
+
+        //Given:
+        val input = listOf("1-3 a: abcde", "1-3 b: cdefg", "2-9 c: ccccccccc")
+
+        //When:
+        val result = Passwords.partTwo(input)
+
+        //Then:
+        Assertions.assertThat(result).isEqualTo(1)
+
+    }
 }
