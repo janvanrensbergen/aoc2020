@@ -5,8 +5,12 @@ import be.moac.aoc.timed
 
 fun main() {
     val input: String = "/day03_input.txt".readResource()
-    Traverse.partOne(input)
-    
+
+    (0..10).forEach{
+        Traverse.partOne(input)
+        Traverse.partTwo(input)
+    }
+
     timed { println("Part one: ${Traverse.partOne(input)}") }
     timed { println("Part two: ${Traverse.partTwo(input)}") }
 }
@@ -27,7 +31,7 @@ object Traverse {
     private fun Array<CharArray>.calculateTrees(right: Int = 3, down: Int = 1) =
         (down until this.size step down)
             .asSequence()
-            .map { x -> this[x][x*right/down % this[x].size] }
+            .map { this[it][it*right/down % this[it].size] }
             .filter { c -> c == '#' }
             .count().toLong()
 
