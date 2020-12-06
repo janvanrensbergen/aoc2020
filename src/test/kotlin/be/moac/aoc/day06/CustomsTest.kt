@@ -34,4 +34,32 @@ internal class CustomsTest  {
         //Then:
         assertThat(result).isEqualTo(11)
     }
+
+    @Test
+    internal fun `that part two will count how many everybody from a group answered yes`() {
+
+        //Given:
+        val input = """
+            abc
+            
+            a
+            b
+            c
+            
+            ab
+            ac
+            
+            a
+            a
+            a
+            a
+            
+            b
+        """.trimIndent()
+        //When:
+        val result = Customs.partTwo(input)
+
+        //Then:
+        assertThat(result).isEqualTo(6)
+    }
 }
