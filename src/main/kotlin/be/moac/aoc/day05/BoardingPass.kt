@@ -1,5 +1,7 @@
 package be.moac.aoc.day05
 
+import be.moac.aoc.day05.BoardingPass.findRow
+import be.moac.aoc.day05.BoardingPass.findSeat
 import be.moac.aoc.readResource
 import be.moac.aoc.timed
 import kotlin.math.ceil
@@ -16,17 +18,17 @@ fun main() {
 
 object BoardingPass {
 
-    fun partOne(input: String): Int {
-        return input.lines()
+    fun partOne(input: String): Int = input.parseSeats().max()!!
+
+    fun partTwo(input: String): Int = input.parseSeats().findMissing()
+
+    private fun String.parseSeats() =
+        this.lines()
             .asSequence()
             .filter { it.isNotBlank() }
             .map { it.substring(0 until 7) to it.substring(7 until 10) }
             .map { it.first.findRow() to it.second.findSeat() }
             .map { it.first * 8 + it.second }
-            .max()!!
-    }
-
-    fun partTwo(input: String) = 0
 
 
     private fun String.findRow() =
@@ -52,5 +54,14 @@ object BoardingPass {
             }.first
 
     private fun IntRange.divide() = ceil((this.last - this.first).toFloat().div(2)).toInt()
+
+    fun Sequence<Int>.findMissing(): Int {
+        val max = this.max()!!
+        val min = this.min()!!
+        val a = max * (max + 1) / 2
+        val b = (0 until min).sum() + this.sum()
+
+        return a-b
+    }
 
 }
