@@ -16,8 +16,6 @@ fun main() {
 
 object Haversacks {
 
-    private val regex = "^(\\d+)\\s(\\D+)\\sbag".toRegex()
-
     fun partOne(input: String): Int =
         input.parse()
             .canContain("shiny gold")
@@ -28,29 +26,6 @@ object Haversacks {
         input.parse()
             .sum("shiny gold")
 
-
-    private fun String.parse() =
-        this.lines()
-            .filter { it.isNotBlank() }
-            .fold(mutableMapOf<String, Rules>()) { acc, line ->
-                val split = line.split(" bags contain")
-                acc[split.first().trim()] =
-                    when (val rules = split.last().trim()) {
-                        in ".*no\\sother\\sbag.*".toRegex() -> Rules.Empty
-                        else -> rules.parseRules()
-                    }
-                acc
-            }.toMap()
-
-    private fun String.parseRules() =
-        Rules.Colors(this.split(",")
-            .map {
-                val (amount, color) = regex.find(it.trim())!!.destructured
-                Rule(amount.toInt(), color)
-            }
-            .toList())
-
-    private operator fun Regex.contains(text: CharSequence): Boolean = this.matches(text)
 }
 
 private fun Map<String, Rules>.sum(color: String): Long {
@@ -66,16 +41,40 @@ private fun Map<String, Rules>.sum(color: String): Long {
 }
 
 private fun Map<String, Rules>.canContain(color: String): List<String> {
-    val result = this
-        .filter { it.value.canContain(color) }
+    fun find(c: String) = this
+        .filter { it.value.canContain(c) }
         .map { it.key }
 
-    return if (result.isEmpty()) {
-        result
-    } else {
-        result + result.flatMap { this.canContain(it) }
+    tailrec fun recursion(input: List<String>, result: List<String> = emptyList()): List<String> {
+        return if(input.isEmpty()) result
+            else recursion(input.flatMap { find(it) }, result + input)
     }
+
+    return recursion(find(color))
 }
+
+private fun String.parse() =
+    this.lines()
+        .filter { it.isNotBlank() }
+        .fold(mutableMapOf<String, Rules>()) { acc, line ->
+            val split = line.split(" bags contain")
+            acc[split.first().trim()] =
+                when (val rules = split.last().trim()) {
+                    in ".*no\\sother\\sbag.*".toRegex() -> Rules.Empty
+                    else -> rules.parseRules()
+                }
+            acc
+        }.toMap()
+
+private fun String.parseRules() =
+    Rules.Colors(this.split(",")
+        .map {
+            val (amount, color) = "^(\\d+)\\s(\\D+)\\sbag".toRegex().find(it.trim())!!.destructured
+            Rule(amount.toInt(), color)
+        }
+        .toList())
+
+private operator fun Regex.contains(text: CharSequence): Boolean = this.matches(text)
 
 sealed class Rules {
     abstract val values: List<Rule>
