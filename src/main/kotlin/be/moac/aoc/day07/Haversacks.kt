@@ -24,7 +24,9 @@ object Haversacks {
             .distinct()
             .count()
 
-    fun partTwo(input: String): Int = 0
+    fun partTwo(input: String): Long =
+        input.parse()
+            .sum("shiny gold")
 
 
     private fun String.parse() =
@@ -49,6 +51,18 @@ object Haversacks {
             .toList())
 
     private operator fun Regex.contains(text: CharSequence): Boolean = this.matches(text)
+}
+
+private fun Map<String, Rules>.sum(color: String): Long {
+    val rules = this[color]?.values ?: emptyList()
+
+    return if (rules.isEmpty()) {
+        0
+    } else {
+        rules
+            .map { it.amount + (it.amount * sum(it.color)) }
+            .sum()
+    }
 }
 
 private fun Map<String, Rules>.canContain(color: String): List<String> {
