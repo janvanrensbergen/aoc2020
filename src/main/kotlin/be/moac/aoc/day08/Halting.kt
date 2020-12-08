@@ -1,6 +1,5 @@
 package be.moac.aoc.day08
 
-import be.moac.aoc.day07.Haversacks
 import be.moac.aoc.readResource
 import be.moac.aoc.timed
 
@@ -18,32 +17,80 @@ fun main() {
 
 object Halting {
 
-    fun partOne(input: String): Int {
-        var accumulator: Int = 0
-        var position: Int = 0
-        val visited: MutableList<Int> = mutableListOf()
+    fun partOne(input: String) = input.parse().calculateAcc()
 
+
+    fun partTwo(input: String): Int {
         val instructions = input.parse()
+        var indexOfCorrupted = -1
 
-        while (true) {
-            val (instruction, amount) = instructions[position]
-            println("$position - $instruction - $amount")
+        loop@ for (index in instructions.indices) {
+            val pair = instructions[index]
+            if(pair.first != "acc"){
+                val maybe = instructions.toMutableList()
+                maybe[index] =
+                    when (pair.first) {
+                        "nop" -> "jmp" to pair.second
+                        "jmp" -> "nop" to pair.second
+                        else -> pair
+                    }
+                if(!maybe.isInfinite()){
+                    indexOfCorrupted = index
+                    break@loop
+                }
+            }
+        }
 
-            when(instruction) {
-                "nop"  -> position += 1
-                "acc"  -> {accumulator += amount; position +=1}
-                "jmp"  -> {position += amount}
+        val fixed = instructions.toMutableList()
+        val pair = fixed[indexOfCorrupted]
+        fixed[indexOfCorrupted] =
+            when (pair.first) {
+                "nop" -> "jmp" to pair.second
+                "jmp" -> "nop" to pair.second
+                else -> pair
             }
 
+        return fixed.calculateAcc()
+    }
+
+    private fun List<Pair<String, Int>>.calculateAcc() : Int {
+        var accumulator = 0
+        var position = 0
+        val visited: MutableList<Int> = mutableListOf()
+
+
+        while (!visited.contains(position) && position < this.size) {
+            visited.add(position)
+            val (instruction, amount) = this[position]
+            when(instruction) {
+                "nop"  -> position += 1
+                "acc"  -> {
+                    accumulator += amount
+                    position +=1
+                }
+                "jmp"  -> {position += amount}
+            }
+        }
+
+        return accumulator
+    }
+    private fun List<Pair<String, Int>>.isInfinite() : Boolean {
+        var position = 0
+        val visited: MutableList<Int> = mutableListOf()
+
+        while(position < this.size){
+            position += when(this[position].first) {
+                "jmp"  -> this[position].second
+                else -> 1
+            }
             if(visited.contains(position)) {
-                return accumulator
+                return true
             } else {
                 visited.add(position)
             }
         }
+        return false
     }
-    fun partTwo(input: String): Int = 0
-
 }
 
 fun String.parse() =

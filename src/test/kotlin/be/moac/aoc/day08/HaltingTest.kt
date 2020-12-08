@@ -29,4 +29,27 @@ internal class HaltingTest {
         //Then:
         assertThat(result).isEqualTo(5)
     }
+
+    @Test
+    internal fun `that part one fixes infinit loop`() {
+
+        //Given:
+        val input = """
+            nop +0
+            acc +1
+            jmp +4
+            acc +3
+            jmp -3
+            acc -99
+            acc +1
+            jmp -4
+            acc +6
+        """.trimIndent()
+
+        //When:
+        val result = Halting.partTwo(input)
+
+        //Then:
+        assertThat(result).isEqualTo(8)
+    }
 }
