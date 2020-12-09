@@ -26,7 +26,28 @@ object EncodingError {
                 .first()
         }
 
-    fun partTwo(input: String): Int = 0
+    fun partTwo(input: String, value: Int = 25): Long =
+        with(input.parse()) {
+            val indexOfCorrupt = (value until this.size)
+                .first { this.subList(it - value, it).check(this[it]) }
+
+            val sum = this[indexOfCorrupt]
+            val preamble = this.subList(0, indexOfCorrupt)
+            val result = mutableListOf(preamble[0])
+            var index = 1
+
+            loop@ while (index < preamble.size) {
+                when {
+                    result.sum() == sum -> break@loop
+                    result.sum() < sum -> {
+                        result.add(preamble[index])
+                        index++
+                    }
+                    result.sum() > sum -> result.removeAt(0)
+                }
+            }
+            result.max()!!.plus(result.min()!!)
+        }
 
 }
 

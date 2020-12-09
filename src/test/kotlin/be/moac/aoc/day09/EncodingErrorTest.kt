@@ -42,4 +42,39 @@ internal class EncodingErrorTest {
         assertThat(result).isEqualTo(127)
 
     }
+
+    @Test
+    internal fun `that part two will find the encryption weakness`() {
+
+        //Given:
+        val input = """
+            35
+            20
+            15
+            25
+            47
+            40
+            62
+            55
+            65
+            95
+            102
+            117
+            150
+            182
+            127
+            219
+            299
+            277
+            309
+            576   
+        """.trimIndent()
+
+        //When:
+        val result = EncodingError.partTwo(input, 5)
+
+        //Then:
+        assertThat(result).isEqualTo(62)
+
+    }
 }
