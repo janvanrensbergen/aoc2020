@@ -93,7 +93,7 @@ object Halting {
     }
 }
 
-fun String.parse() =
+private fun String.parse() =
     this.lines()
         .filter { it.isNotBlank() }
         .map { it.split("\\s".toRegex()) }
