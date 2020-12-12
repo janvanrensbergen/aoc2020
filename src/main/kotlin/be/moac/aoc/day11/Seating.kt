@@ -2,6 +2,8 @@
 
 package be.moac.aoc.day11
 
+import be.moac.aoc.day11.Spot.Empty
+import be.moac.aoc.day11.Spot.Occupied
 import be.moac.aoc.readResource
 import be.moac.aoc.timed
 import java.lang.IllegalArgumentException
@@ -40,35 +42,19 @@ private tailrec fun Spots.haveASeat(
 ): Spots {
     if (!changed) return this
     var isChanged = false
+
     val result = this.mapIndexed { r, row ->
         row.mapIndexed { c, spot ->
-            when (spot) {
-                Spot.Empty -> {
-                    when {
-                        emptyPredicate(r to c) -> {
-                            isChanged = true
-                            Spot.Occupied
-                        }
-                        else -> spot
-                    }
-                }
-                Spot.Occupied -> {
-                    when {
-                        occupiedPredicate(r to c) -> {
-                            isChanged = true
-                            Spot.Empty
-                        }
-                        else -> spot
-                    }
-                }
+            val result = when (spot) {
+                Empty -> if(emptyPredicate(r to c)) Occupied else spot
+                Occupied -> if(occupiedPredicate(r to c)) Empty else spot
                 else -> spot
             }
+
+            isChanged = isChanged || spot != result
+            result
         }.toTypedArray()
     }.toTypedArray()
-
-//    result.print()
-//    println("==========================================")
-
 
     return result.haveASeat(isChanged, emptyPredicate, occupiedPredicate)
 }
@@ -96,7 +82,7 @@ fun Spots.countOccupiedSeatsInLineOfSight(position: Point): Int {
 
     return position.adjacent()
         .map { this[it.first][it.second] }
-        .filter { it == Spot.Occupied }
+        .filter { it == Occupied }
         .count()
 }
 
@@ -109,7 +95,7 @@ private fun Spots.countAdjacentOccupiedSeats(position: Point): Int {
 
     return position.adjacent()
         .map { this[it.first][it.second] }
-        .filter { it == Spot.Occupied }
+        .filter { it == Occupied }
         .count()
 }
 
@@ -125,8 +111,8 @@ private fun String.parseLine(): Array<Spot> =
         .map {
             when (it) {
                 '.' -> Spot.Floor
-                'L' -> Spot.Empty
-                '#' -> Spot.Occupied
+                'L' -> Empty
+                '#' -> Occupied
                 else -> throw IllegalArgumentException()
             }
         }
@@ -149,12 +135,10 @@ sealed class Spot {
 typealias Point = Pair<Int, Int>
 typealias Spots = Array<Array<Spot>>
 
-
-fun Spots.copy(): Spots = Array(size) { get(it).clone() }
 fun Spots.print() = this.forEach { println(it.joinToString("")) }
 fun Spots.countOccupied() = this
     .flatMap { it.asList() }
-    .filter { it == Spot.Occupied }
+    .filter { it == Occupied }
     .count()
 
 //@formatter:off
