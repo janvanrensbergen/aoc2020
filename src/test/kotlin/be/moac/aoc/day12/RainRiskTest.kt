@@ -26,4 +26,24 @@ internal class RainRiskTest {
         assertThat(result).isEqualTo(25)
 
     }
+
+    @Test
+    internal fun `that part two navigates to the given input`() {
+
+        //Given:
+        val input = """
+            F10
+            N3
+            F7
+            R90
+            F11
+        """.trimIndent()
+
+        //When:
+        val result = RainRisk.partTwo(input)
+
+        //Then:
+        assertThat(result).isEqualTo(286)
+
+    }
 }
