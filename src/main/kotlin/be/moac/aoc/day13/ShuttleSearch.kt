@@ -58,8 +58,6 @@ object ShuttleSearch {
                 }
                 busTime = previous * it.second
                 previous = it.second.toLong()
-
-                print(".")
             }
 
         return timestamp
@@ -71,33 +69,4 @@ typealias Busses = List<Pair<Int, Int>>
 fun Busses.check(timestamp: Long): Boolean {
     return !this
         .all { (timestamp + it.first) % it.second == 0L  }
-}
-
-// Shameless copied from https://www.geeksforgeeks.org/multiplicative-inverse-under-modulo-m/
-fun modInverse(a: Int, m: Int): Int {
-    var a = a
-    var m = m
-    val m0 = m
-    var y = 0
-    var x = 1
-    if (m == 1) return 0
-    while (a > 1) {
-        // q is quotient
-        val q = a / m
-        var t = m
-
-        // m is remainder now, process
-        // same as Euclid's algo
-        m = a % m
-        a = t
-        t = y
-
-        // Update x and y
-        y = x - q * y
-        x = t
-    }
-
-    // Make x positive
-    if (x < 0) x += m0
-    return x
 }
