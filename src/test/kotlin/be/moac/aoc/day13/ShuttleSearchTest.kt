@@ -20,4 +20,21 @@ internal class ShuttleSearchTest {
         //Then:
         assertThat(result).isEqualTo(295)
     }
+
+    @Test
+    internal fun `that part two will find the correct timestamp`() {
+
+        //Given:
+        val input = """
+            939
+            7,13,x,x,59,x,31,19
+        """.trimIndent()
+
+        //When:
+        val result = ShuttleSearch.partTwo(input)
+
+        //Then:
+        assertThat(result).isEqualTo(1068781)
+    }
 }
+
