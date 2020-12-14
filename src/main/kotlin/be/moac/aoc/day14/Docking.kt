@@ -1,6 +1,5 @@
 package be.moac.aoc.day14
 
-import be.moac.aoc.day13.ShuttleSearch
 import be.moac.aoc.day14.Instruction.Mask
 import be.moac.aoc.readResource
 import be.moac.aoc.timed
@@ -19,14 +18,13 @@ fun main() {
 object Docking {
 
     fun partOne(input: String): Long {
-
-        val memory = mutableMapOf<Int, Long>()
-        var currentMask:Mask = Mask("")
+        val memory = mutableMapOf<Long, Long>()
+        var currentMask: Mask = Mask("")
 
         input
             .parse()
             .forEach {
-                when(it){
+                when (it) {
                     is Mask -> currentMask = it
                     is Instruction.Mem -> {
                         val result = it.applyMask(currentMask)
@@ -39,10 +37,30 @@ object Docking {
         return memory.values.sum()
     }
 
-    fun partTwo(input: String): Int = 0
+    fun partTwo(input: String): Long {
+        val memory = mutableMapOf<Long, Long>()
+        var currentMask: Mask = Mask("")
 
+        input
+            .parse()
+            .forEach {
+                when (it) {
+                    is Mask -> currentMask = it
+                    is Instruction.Mem -> {
+                        it.applyAddressMask(currentMask)
+                            .forEach { result ->
+                                memory[result.address] = result.value
+                            }
+                    }
+                    Instruction.NoOp -> TODO()
+                }
+            }
 
+        return memory.values.sum()
+    }
 }
+
+private val memRegex = "^mem\\[(\\d+)\\]\\s=\\s(\\d+)".toRegex()
 
 private fun String.parse() =
     this.lines()
@@ -51,40 +69,48 @@ private fun String.parse() =
             when {
                 it.startsWith("mask") -> Mask(it.split("=")[1].trim())
                 it.startsWith("mem") -> {
-                    val (address, value) = "^mem\\[(\\d+)\\]\\s=\\s(\\d+)".toRegex().find(it)!!.destructured
-                    Instruction.Mem(address.toInt(), value.toLong())
+                    val (address, value) = memRegex.find(it)!!.destructured
+                    Instruction.Mem(address.toLong(), value.toLong())
                 }
-                else -> {
-                    println("noop: $it")
-                    Instruction.NoOp
-                }
+                else -> Instruction.NoOp
             }
         }
 
 sealed class Instruction {
-    data class Mask(val value:String): Instruction()
+    data class Mask(val value: String) : Instruction()
 
 
-    data class Mem(val address: Int, val value: Long): Instruction() {
+    data class Mem(val address: Long, val value: Long) : Instruction() {
         fun applyMask(mask: Mask): Mem {
             val bits = value.toBitString().toCharArray()
-//            println(bits.joinToString(""))
-
             mask.value
                 .toCharArray()
                 .withIndex()
                 .filter { it.value.toLowerCase() != 'x' }
                 .forEach { bits[it.index] = it.value }
 
-            val result = bits.joinToString("")
-//            println(result)
-//            println(Integer.parseInt(result, 2))
+            return Mem(address, java.lang.Long.parseLong(bits.joinToString(""), 2))
+        }
 
-            return Mem(address, java.lang.Long.parseLong(result, 2))
+        fun applyAddressMask(mask: Mask): List<Mem> {
+            val bits = address.toBitString().toCharArray()
+            return mask.value
+                .toCharArray()
+                .foldIndexed(mutableListOf("")) { index: Int, acc, c ->
+                    when (c) {
+                        'X' -> acc.map { "${it}0" }.plus(acc.map { "${it}1" }).toMutableList()
+                        else ->
+                            when (c) {
+                                '0' -> acc.map { "$it${bits[index]}" }.toMutableList()
+                                else -> acc.map { "$it$c" }.toMutableList()
+                            }
+                    }
+                }.map { a -> java.lang.Long.parseLong(a, 2) }
+                .map { Mem(it, value) }
         }
     }
 
-    object NoOp: Instruction()
+    object NoOp : Instruction()
 }
 
 fun Long.toBitString(): String =
