@@ -22,6 +22,25 @@ internal class ConwayCubesTest {
         assertThat(result).isEqualTo(112)
 
     }
+
+    @Test
+    internal fun `that part two will count all active cubes in 4 dimensions`() {
+
+        //Given:
+        val input = """
+            .#.
+            ..#
+            ###
+        """.trimIndent()
+
+        //When:
+        val result = ConwayCubesPartTwo.partTwo(input)
+
+        //Then:
+        assertThat(result).isEqualTo(848)
+
+    }
+
 }
 
 
