@@ -15,25 +15,53 @@ fun main() {
     timed { println("Part two: ${TicketTranslation.partTwo(input)}") }
 }
 
-
 object TicketTranslation {
     fun partOne(input: String): Int {
-
-        val parsedInput = input.parse()
-
-        val rules = parsedInput.rules
-        val nearbyTickets = parsedInput.nearbyTickets
-
-
+        val (rules, _, nearbyTickets) = input.parse()
 
         return nearbyTickets
-            .flatMap {
-                it.numbers
-                    .filterNot { number -> rules.isValid(number) }
-            }
+            .flatMap { it.numbers.filterNot { number -> rules.isValid(number) } }
             .sum()
     }
-    fun partTwo(input: String): Int = 0
+
+    fun partTwo(input: String): Long {
+        val (rules, myTicket, nearbyTickets) = input.parse()
+
+        tailrec fun go(indices: List<Int>, rules: Rules, result: Map<String, Int>): Map<String, Int> {
+            if (indices.isEmpty()) return result
+
+            val match = rules.map { rule ->
+                val valids = indices.map { index ->
+                    val valid = nearbyTickets
+                        .map { it.numbers[index] }
+                        .all { rule.isValid(it) }
+
+                    index to valid
+                }.filter { it.second }
+                    .map { it.first }
+
+                rule to valids
+            }.first { it.second.count() == 1 }
+
+            val map = result .toMutableMap()
+            map[match.first.name] = match.second.first()
+
+            val list = indices.toMutableList()
+            list.remove(match.second.first())
+
+            val list1 = rules.toMutableList()
+            list1.remove(match.first)
+
+            return go(list, list1, map)
+        }
+
+        val result = go(rules.indices.toList(), rules, emptyMap())
+
+        return result.entries
+            .filter { it.key.startsWith("departure") }
+            .map { myTicket.numbers[it.value].toLong() }
+            .fold(1L) {acc, i -> acc * i }
+    }
 }
 
 private fun String.parse(): Input {
@@ -53,11 +81,11 @@ private fun String.parse(): Input {
 
 private val ruleRegex = "^(\\D+):\\s(\\d+)-(\\d+)\\sor\\s(\\d+)-(\\d+)".toRegex()
 
-private fun String.parseRules():List<Rule> =
+private fun String.parseRules(): List<Rule> =
     this.lines()
         .filter { it.isNotBlank() }
         .map {
-            val(name, a1, b1, a2, b2) = ruleRegex.find(it)!!.destructured
+            val (name, a1, b1, a2, b2) = ruleRegex.find(it)!!.destructured
             Rule(name, a1.toInt()..b1.toInt(), a2.toInt()..b2.toInt())
         }
 
@@ -74,10 +102,25 @@ private fun String.parseTicket() =
 
 typealias Rules = List<Rule>
 
-private fun Rules.isValid(number:Int) =
-    this.any { it.firstRange.contains(number) || it.secondRange.contains(number)}
+private fun Rules.isValid(number: Int) =
+    this.any { it.isValid(number) }
 
-class Input(val rules: List<Rule>, val yourTicket: Ticket, val nearbyTickets: List<Ticket>)
-data class Rule(val name: String, val firstRange: IntRange, val secondRange: IntRange)
+class Input(val rules: List<Rule>, val yourTicket: Ticket, val nearbyTickets: List<Ticket>) {
+    val validNearbyTickets
+        get() =
+            nearbyTickets.filter { it.numbers.all { number -> rules.isValid(number) } }
+
+
+    operator fun component1() = rules
+    operator fun component2() = yourTicket
+    operator fun component3() = nearbyTickets
+
+
+}
+
+data class Rule(val name: String, val firstRange: IntRange, val secondRange: IntRange) {
+    fun isValid(number: Int) =
+        firstRange.contains(number) || secondRange.contains(number)
+}
 
 data class Ticket(val numbers: IntArray)
