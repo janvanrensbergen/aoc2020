@@ -1,8 +1,5 @@
 package be.moac.aoc.day17
 
-import be.moac.aoc.readResource
-import be.moac.aoc.timed
-
 
 @Suppress("DuplicatedCode")
 object ConwayCubesPartTwo {
@@ -23,9 +20,6 @@ object ConwayCubesPartTwo {
                     }
                 }
             }.sum()
-
-        fun Space4d.min(selector:Point4d.() -> Int) = this.keys.map { it.selector() }.min()?:0
-        fun Space4d.max(selector:Point4d.() -> Int) = this.keys.map { it.selector() }.max()?:0
 
         tailrec fun cycle(
             current: Space4d,
@@ -66,10 +60,6 @@ object ConwayCubesPartTwo {
                     yMinMax = -20 to 20,
                     zMinMax = -20 to 20,
                     wMinMax = -20 to 20
-//                    xMinMax = current.min { x } to current.max { x },
-//                    yMinMax = current.min { y } to current.max { y },
-//                    zMinMax = current.min { z } to current.max { z },
-//                    wMinMax = current.min { w } to current.max { w }
                 )
             }
         }
