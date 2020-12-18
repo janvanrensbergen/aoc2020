@@ -17,13 +17,11 @@ fun main() {
 object OperationOrder {
 
     fun partOne(input: String): Long {
-
-
         fun String.doIt(): Long {
             return when {
                 this.contains("(") -> {
                     val prefix = this.substring(0, this.indexOfFirst { it == '(' })
-                    val (first, second) = this.substring(this.indexOfFirst { it == '(' }).groupParantheses()
+                    val (first, second) = this.substring(this.indexOfFirst { it == '(' }).groupParentheses()
                     "$prefix${first.doIt()}$second".doIt()
                 }
                 else -> return calculate()
@@ -34,17 +32,42 @@ object OperationOrder {
         return input.lines()
             .asSequence()
             .filter { it.isNotBlank() }
-            .map { it.trim() }
-            .map { it.replace(" ", "") }
             .map { it.doIt() }
             .toList()
             .sum()
     }
 
-    fun partTwo(input: String): Int = 0
+    fun partTwo(input: String): Long {
+        fun String.doItAgain(): Long {
+            return when {
+                this.contains("(") -> {
+                    val prefix = this.substring(0, this.indexOfFirst { it == '(' })
+                    val (first, second) = this.substring(this.indexOfFirst { it == '(' }).groupParentheses()
+                    "$prefix${first.doItAgain()}$second".doItAgain()
+                }
+                this.contains("*") && this.contains("+") -> {
+                    split("*")
+                        .map { it.doItAgain() }
+                        .joinToString(" * ")
+                        .doItAgain()
+                }
+                else -> {
+                    return calculate()
+                }
+            }
+        }
+
+
+        return input.lines()
+            .asSequence()
+            .filter { it.isNotBlank() }
+            .map { it.doItAgain() }
+            .toList()
+            .sum()
+    }
 }
 
-internal fun String.groupParantheses(): Pair<String, String> {
+internal fun String.groupParentheses(): Pair<String, String> {
 
     data class Result(val value: String, val numberOfOpen: Int, val numberOfClosed: Int)
 
@@ -65,10 +88,10 @@ internal fun String.groupParantheses(): Pair<String, String> {
     return result.substring(1 until result.length - 1) to substring(result.length until length)
 }
 
-val regex = "(\\d+|\\D+)\\s*".toRegex()
+private val regex = "(\\d+|\\D+)\\s*".toRegex()
 
 fun String.calculate(): Long =
-    regex.findAll(this)
+    regex.findAll(this.trim())
         .map { it.value }
         .fold(0L to "+") { acc, c ->
             val second = c.trim().toLongOrNull()
